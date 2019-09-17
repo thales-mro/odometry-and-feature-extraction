@@ -57,21 +57,31 @@ def main():
 		all_x, all_y, robot_trajectory = forward(robot, 3.45, all_x, all_y, robot_trajectory)
 		
 		all_x, all_y = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y) # 90.0
-		all_x, all_y = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y) # 90.0
+		all_x, all_y = rotate(robot, degreesToRadians(88.0), 0, all_x, all_y) # 90.0
+		
 		all_x, all_y, robot_trajectory = forward(robot, 3.45, all_x, all_y, robot_trajectory)
-
 		
-		'''
-		all_x, all_y = rotate(robot, degreesToRadians(90.0), 1, all_x, all_y) # 90.0
-		all_x, all_y = forward(robot, 4.0, all_x, all_y)
 		
-		all_x, all_y = rotate(robot, degreesToRadians(90.0), 1, all_x, all_y) # 90.0
-		all_x, all_y = forward(robot, 4.0, all_x, all_y) # 1.9
+		
+		all_x, all_y = rotate(robot, degreesToRadians(88.0), 1, all_x, all_y) # 90.0
+		all_x, all_y, robot_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory)
+		
 
+		all_x, all_y = rotate(robot, degreesToRadians(82.0), 1, all_x, all_y) # 90.0
+		all_x, all_y, robot_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory) # 1.9
+		
 		all_x, all_y = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y) # 90.0
-		all_x, all_y = forward(robot, 2.5, all_x, all_y) # 1.9
+		all_x, all_y, robot_trajectory = forward(robot, 2.35, all_x, all_y, robot_trajectory) # 2.05
 
-		'''
+		all_x, all_y = rotate(robot, degreesToRadians(75.0), 0, all_x, all_y) # 85.0
+		
+		all_x, all_y, robot_trajectory = forward(robot, 1.10, all_x, all_y, robot_trajectory) 
+		all_x, all_y = rotate(robot, degreesToRadians(88.0), 0, all_x, all_y) # 85.0
+		all_x, all_y = rotate(robot, degreesToRadians(88.0), 0, all_x, all_y) # 85.0
+
+		all_x, all_y, robot_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory) # 1.9
+
+		
 		'''
 		all_x, all_y = rotate(robot, degreesToRadians(90.0), 1, all_x, all_y) # 90.0
 		
@@ -102,10 +112,16 @@ def main():
 		all_x, all_y = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y) # 57.5
 		'''
 
-	robot_trajectory = np.array(robot_trajectory)
+	delta_space = len(robot_trajectory)//1000
+	print(np.array(robot_trajectory).shape)
+	robot_trajectory = np.array(robot_trajectory)[::delta_space]
 	plt.plot(-1*np.array(all_x), -1*np.array(all_y), 'o')
-	plt.plot(robot_trajectory[:,0], robot_trajectory[:,1], 'go')
+	plt.plot(-1*robot_trajectory[:,0], -1*robot_trajectory[:,1], 'go')
 	plt.show()
+
+	pointsToSave = np.array([all_x, all_y])
+	np.save("ExtractedPoints.npy", pointsToSave, fix_imports=False)
+	np.save("Trajectory.npy", robot_trajectory, fix_imports=False)
 
 
 def degreesToRadians(degree_angle):
