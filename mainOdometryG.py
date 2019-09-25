@@ -123,21 +123,31 @@ def main():
 		
 		robot.set_left_velocity(2.0)
 		robot.set_right_velocity(0.0)
-		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(80.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
 
 		robot.set_left_velocity(3.0)
 		robot.set_right_velocity(3.0)
-		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 2.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.2, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
 		
 
 
-		
-	odometry_trajectory = np.array(odometry_trajectory)
-	robot_trajectory = np.array(robot_trajectory)
+	delta_space = len(robot_trajectory)//1000
+	odometry_trajectory = np.array(odometry_trajectory)[::delta_space]
+	robot_trajectory = np.array(robot_trajectory)[::delta_space]
+	pointsToSave = np.array([all_x, all_y])
+
+	print(np.array(robot_trajectory).shape)
+	
+	plt.plot(-1*np.array(all_x), -1*np.array(all_y), 'o')
+	plt.show()
 
 	plt.plot(-1*odometry_trajectory[:,0], -1*odometry_trajectory[:,1], '.')
 	plt.plot(-1*robot_trajectory[:,0], -1*robot_trajectory[:,1], 'g.')
 	plt.show()
+
+	np.save("ExtractedPoints.npy", pointsToSave, fix_imports=False)
+	np.save("Trajectory.npy", robot_trajectory, fix_imports=False)
+	np.save("Odometry.npy", odometry_trajectory, fix_imports=False)
 
 
 def degreesToRadians(degree_angle):
