@@ -25,7 +25,9 @@ def main():
 	odometry_trajectory = [[x0,y0]]
 	moviment_state = [x0, y0, orientation_odometry]
 
+	# Hard-coded trajectory 
 	if(robot.get_connection_status() != -1):
+		
 		
 		robot.set_left_velocity(3.0)
 		robot.set_right_velocity(3.0)
@@ -47,16 +49,88 @@ def main():
 
 		robot.set_left_velocity(3.0)
 		robot.set_right_velocity(3.0)
-		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 2.2, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.5, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
 
-		robot.set_left_velocity(0.0)
-		robot.set_right_velocity(2.0)
-		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(80.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+		robot.set_left_velocity(2.0)
+		robot.set_right_velocity(0.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(180.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
 
 		robot.set_left_velocity(3.0)
 		robot.set_right_velocity(3.0)
 		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
-			
+		
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 0.3, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(95.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+		
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+		robot.set_left_velocity(2.0)
+		robot.set_right_velocity(0.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 7.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+		
+
+		robot.set_left_velocity(2.0)
+		robot.set_right_velocity(0.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(75.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 3.5, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+
+		
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(180.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(70.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 4.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+
+		robot.set_left_velocity(2.0)
+		robot.set_right_velocity(0.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(80.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.9, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+		robot.set_left_velocity(2.0)
+		robot.set_right_velocity(0.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 2.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory)
+		
+
+
 		
 	odometry_trajectory = np.array(odometry_trajectory)
 	robot_trajectory = np.array(robot_trajectory)
