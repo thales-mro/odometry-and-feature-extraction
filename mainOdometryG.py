@@ -13,6 +13,7 @@ import vrep
 def main():
 
 	robot = Robot()
+	#Circuit03(robot)
 
 	all_x = []
 	all_y = []
@@ -24,6 +25,91 @@ def main():
 	orientation_odometry = 0
 	odometry_trajectory = [[x0,y0]]
 	moviment_state = [x0, y0, orientation_odometry]
+
+
+
+	
+	# Hard-coded trajectory 
+	if(robot.get_connection_status() != -1):
+		
+		
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 3.15
+
+		
+		#res, gyroX = vrep.simxGetFloatSignal(robot.clientID, "gyroX", vrep.simx_opmode_streaming)
+		#res, gyroY = vrep.simxGetFloatSignal(robot.clientID, "gyroY", vrep.simx_opmode_streaming)
+		#res, gyroZ = vrep.simxGetFloatSignal(robot.clientID, "gyroZ", vrep.simx_opmode_streaming)
+	
+		#print(gyroX, gyroY, gyroZ)
+		
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		
+		
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
+
+		
+		
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
+
+		robot.set_left_velocity(0.0)
+		robot.set_right_velocity(2.0)
+		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+
+		robot.set_left_velocity(3.0)
+		robot.set_right_velocity(3.0)
+		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 1.0, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
+
+ 
+		#robot.set_left_velocity(0.0)
+		#robot.set_right_velocity(2.0)
+		#all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(85.0), 1, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
+		
+
+		#delta_space = len(robot_trajectory)//1000
+		odometry_trajectory = np.array(odometry_trajectory)#[::delta_space]
+		robot_trajectory = np.array(robot_trajectory)#[::delta_space]
+		#pointsToSave = np.array([all_x, all_y])
+
+		#print(np.array(robot_trajectory).shape)
+		
+		#plt.plot(-1*np.array(all_x), -1*np.array(all_y), 'o')
+		#plt.show()
+
+		plt.plot(-1*odometry_trajectory[:,0], -1*odometry_trajectory[:,1], '.')
+		plt.plot(-1*robot_trajectory[:,0], -1*robot_trajectory[:,1], 'g.')
+		plt.show()
+	
+
+
+def Circuit03(robot):
+
+	all_x = []
+	all_y = []
+	robot_trajectory = []
+	
+
+	x0,y0,z0 = robot.get_current_position()
+	
+	orientation_odometry = 0
+	odometry_trajectory = [[x0,y0]]
+	moviment_state = [x0, y0, orientation_odometry]
+
+	robot.set_left_velocity(0.0)
+	robot.set_right_velocity(0.0)
 
 	# Hard-coded trajectory 
 	if(robot.get_connection_status() != -1):
@@ -277,6 +363,8 @@ def odometry(robot, x, y, orientation):
 	angle0_left = get_left_enconder(robot)
 	angle0_right = get_right_enconder(robot)
 
+	res, gyroZ = vrep.simxGetFloatSignal(robot.clientID, "gyroZ", vrep.simx_opmode_streaming)
+	
 	time.sleep(0.1)
 
 	angle1_left = get_left_enconder(robot)
@@ -293,12 +381,27 @@ def odometry(robot, x, y, orientation):
 	else:
 		dtheta_right = abs(angle1_right - angle0_right) 
 
-	dangle = (robot.WHEEL_RADIUS*(dtheta_right - dtheta_left))/robot.ROBOT_WIDTH
+	dangle_encoder = ((robot.WHEEL_RADIUS*(dtheta_right - dtheta_left))/robot.ROBOT_WIDTH) #*1.15 #-- encoder odometry
+	#dangle = gyroZ #*0.75
+	dangle = (0.75*gyroZ + 1.0*dangle_encoder)/2 #*0.75
+
+
+	if abs(dangle) < 0.01:
+		#print(dangle, orientation, x, y)
+		dangle = 0.0
+
+	if dtheta_right < 0.01:
+		dtheta_right = 0.0
+
+	if dtheta_left < 0.01:
+		dtheta_left = 0.0
+
 	ds = (robot.WHEEL_RADIUS*(dtheta_right + dtheta_left))/2
 
 	dx = ds*np.cos(orientation + dangle/2)
 	dy = ds*np.sin(orientation + dangle/2)
 
+	print(orientation, dangle)
 
 	return x+dx, y+dy, orientation+dangle
 
