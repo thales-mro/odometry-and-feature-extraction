@@ -5,7 +5,8 @@ import random
 
 def ransac(points, canvas):
     good = 0
-    while good <= 10:
+    while good <= 100:
+        print("Iter number #", good)
         valid_guess = False
         guess1 = 0
         guess2 = 0
@@ -39,11 +40,7 @@ def ransac(points, canvas):
         print(hit_rate)
         
         if hit_rate > 20000:
-            print("Vai pintar")
-            min_x = 8
-            max_x = -8
-            min_y = 8
-            max_y = -8
+            #print("Vai pintar")
 
             points = points[points[:, 1].argsort()]
             points = points[points[:, 0].argsort(kind='mergesort')]
@@ -52,6 +49,8 @@ def ransac(points, canvas):
             last_y = points[0][1]
             p_0 = [last_x, last_y]
             n_points = 0
+            to_be_deleted = []
+            to_be_deleted_iter = []
             for idx in hit_idx:
                 #print("@@@@@@@@2", points[idx][0]**2)
                 dist_between_points = math.sqrt(((points[idx][0] - last_x)**2) + ((points[idx][1] - last_y)**2))
@@ -59,16 +58,22 @@ def ransac(points, canvas):
                 if dist_between_points > 0.1:
                     #print("n points", n_points)
                     if n_points > 1000:
-                        print("Vai pintar meeeesmo", n_points)
+                        #print("Vai pintar meeeesmo", n_points)
                         cv2.line(canvas, (int((1024/14)*(p_0[0] + 6)), (1024 - int((1024/14)*(p_0[1] + 8)))), (int((1024/14)*(last_x + 6)), (1024 - int((1024/14)*(last_y + 8)))), (255, 0, 0), 3)
+                        cv2.imwrite("features.png", canvas)
+                        to_be_deleted += to_be_deleted_iter
                     n_points = 0
                     p_0[0] = points[idx][0]
-                    p_0[1] = points[idx][1] 
+                    p_0[1] = points[idx][1]
+                    to_be_deleted_iter = []
                 else:
                     n_points += 1
+                    to_be_deleted_iter.append(idx)
                 last_x = points[idx][0]
                 last_y = points[idx][1]
-                '''if points[idx][0] < min_x:
+
+            points = np.delete(points, to_be_deleted, axis=0)
+            '''if points[idx][0] < min_x:
                     min_x = points[idx][0]
                     min_y = points[idx][1]
                 if points[idx][0] > max_x:
@@ -83,7 +88,6 @@ def ransac(points, canvas):
 
             # cv2.line(canvas, (x_0, y_0), (x_f, y_f), (255, 0, 0), 3)
 
-            cv2.imwrite("features.png", canvas)
 
         good += 1
 
