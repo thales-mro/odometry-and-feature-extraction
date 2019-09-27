@@ -6,8 +6,8 @@ import random
 
 def ransac_inverted_plane(points, canvas):
     good = 0
-    while good <= 100:
-        print("Iter number #", good)
+    while good <= 30:
+        #print("Iter number #", good)
         valid_guess = False
         guess1 = 0
         guess2 = 0
@@ -38,9 +38,9 @@ def ransac_inverted_plane(points, canvas):
             if elem < 0.1:
                 hit_rate2 += 1
                 hit_idx.append(idx)
-        print(hit_rate2)
+        #print(hit_rate2)
         
-        if hit_rate2 > 20000:
+        if hit_rate2 > 10000:
             #print("Vai pintar")
 
             points = points[points[:, 0].argsort()]
@@ -78,8 +78,10 @@ def ransac_inverted_plane(points, canvas):
         good += 1
 
 def ransac_regular_plane(points, canvas):
+
+    lines = []
     good = 0
-    while good <= 100:
+    while good <= 20:
         print("Iter number #", good)
         valid_guess = False
         guess1 = 0
@@ -120,7 +122,7 @@ def ransac_regular_plane(points, canvas):
             if elem < 0.1:
                 hit_rate1 += 1
                 hit_idx.append(idx)
-        print(hit_rate1)
+        #print(hit_rate1)
         
         if hit_rate1 > 20000:
             #print("Vai pintar")
@@ -142,9 +144,10 @@ def ransac_regular_plane(points, canvas):
                     #print("n points", n_points)
                     if n_points > 1000:
                         #print("Vai pintar meeeesmo", n_points)
-                        cv2.line(canvas, (int((1024/14)*(p_0[0] + 6)), (1024 - int((1024/14)*(p_0[1] + 8)))), (int((1024/14)*(last_x + 6)), (1024 - int((1024/14)*(last_y + 8)))), (255, 0, 0), 3)
-                        cv2.imwrite("features.png", canvas)
+                        #cv2.line(canvas, (int((1024/14)*(p_0[0] + 6)), (1024 - int((1024/14)*(p_0[1] + 8)))), (int((1024/14)*(last_x + 6)), (1024 - int((1024/14)*(last_y + 8)))), (255, 0, 0), 3)
+                        #cv2.imwrite("features.png", canvas)
                         to_be_deleted += to_be_deleted_iter
+                        lines.append([p_0[0], p_0[1], last_x, last_y])
                     n_points = 0
                     p_0[0] = points[idx][0]
                     p_0[1] = points[idx][1]
@@ -217,7 +220,7 @@ def ransac_regular_plane(points, canvas):
 
         good += 1
 
-
+    return np.asarray(lines, dtype=np.float32)
 
 
 
@@ -289,10 +292,10 @@ def main():
         points[i] = [data[0][i], data[1][i]]
 
 
-    sorted_points = points[points[:, 1].argsort()]
-    sorted_points = sorted_points[sorted_points[:, 0].argsort(kind='mergesort')]
+    sorted_points = points[points[:, 0].argsort()]
+    sorted_points = sorted_points[sorted_points[:, 1].argsort(kind='mergesort')]
 
-    print("Msix x:", np.min(data[0]), "Max x:", np.max(data[0]))
+    #print("Msix x:", np.min(data[0]), "Max x:", np.max(data[0]))
     plot_arr = np.full((1024, 1024, 3), 255, dtype=np.uint8)
     result = np.full((1024, 1024, 3), 255, dtype=np.uint8)
     #print(points[0][0], points[0][1])
@@ -300,18 +303,53 @@ def main():
         x = int((1024/14)*(point[0] + 6))
         y = 1024 - int((1024/14)*(point[1] + 8))
         #print(x, y)
-        # plot_arr[y][x][0] = 0
-        # plot_arr[y][x][1] = 0
-        # plot_arr[y][x][2] = 0
+        plot_arr[y][x][0] = 0
+        plot_arr[y][x][1] = 0
+        plot_arr[y][x][2] = 0
         #print(x, y)
 
     #points = points.reshape((-1, 1, 2))
 
-    ransac_regular_plane(sorted_points, plot_arr)
+    regular_lines = ransac_regular_plane(sorted_points, plot_arr)
+    regular_lines = regular_lines[regular_lines[:, 0].argsort()]
+    regular_lines = regular_lines[regular_lines[:, 1].argsort(kind='mergesort')]
+    print("regular lines", regular_lines)
+    color = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
+    last_line = []
+    start_idx = 0
+    last_incl = 0
+    if regular_lines.any():
+        last_line = regular_lines[0]
+        last_incl = (last_line[3] - last_line[1])/(last_line[2] - last_line[0])
+        incl = (last_line[3] - last_line[1])/(last_line[2] - last_line[0])
+
+    for idx, line in enumerate(regular_lines):
+        print("line:", line)
+        if idx != start_idx:
+            #print("09")
+            incl = (line[3] - line[1])/(line[2] - line[0])
+            diff_incl = abs(last_incl - incl)
+            dist_y = abs(line[3] - last_line[1])
+            dist_x = abs(line[0] - last_line[2])#math.sqrt((line[1] - last_line[3])**2 + (line[0] - last_line[2])**2)
+            #print("incl", incl, "dist", dist)
+            if diff_incl > 0.1 or (dist_y > 0.3 and dist_x > 0.2):
+                #print("w0w", idx)
+                cv2.line(plot_arr, (int((1024/14)*(regular_lines[start_idx][0] + 6)), (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))), (int((1024/14)*(last_line[2] + 6)), (1024 - int((1024/14)*(last_line[3] + 8)))), (255, 0, 0), 3)
+                start_idx = idx
+                #cv2.putText(plot_arr, str(idx), (int((1024/14)*(regular_lines[start_idx][0] + 6)), (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+
+        last_line = line
+        last_incl = incl
+        cv2.line(plot_arr, (int((1024/14)*(regular_lines[start_idx][0] + 6)), (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))), (int((1024/14)*(last_line[2] + 6)), (1024 - int((1024/14)*(last_line[3] + 8)))), (255, 0, 0), 3)
+
+    cv2.imwrite("features.png", plot_arr)
+
 
     sorted_points = points[points[:, 0].argsort()]
     sorted_points = sorted_points[sorted_points[:, 1].argsort(kind='mergesort')]
-    ransac_inverted_plane(sorted_points, plot_arr)
+    #ransac_inverted_plane(sorted_points, plot_arr)
+
+
     #print("intersection_points")
 
     # cv2.imshow("Window", plot_arr)
