@@ -7,7 +7,7 @@ import random
 def ransac_inverted_plane(points, canvas):
     lines = []
     good = 0
-    while good <= 100:
+    while good <= 200:
         print("Iter number #", good)
         valid_guess = False
         guess1 = 0
@@ -372,7 +372,7 @@ def main():
             dist_y = abs(line[3] - last_line[1])
             dist_x = abs(line[0] - last_line[2])#math.sqrt((line[1] - last_line[3])**2 + (line[0] - last_line[2])**2)
             #print("incl", incl, "dist", dist)
-            if diff_incl > 0.1 or (dist_y > 0.2 and dist_x > 0.3):
+            if diff_incl > 0.1 or (dist_y > 0.2 and dist_x > 0.1):
                 #print("w0w", idx)
                 cv2.line(plot_arr, (int((1024/14)*(inverted_lines[start_idx][0] + 6)), (1024 - int((1024/14)*(inverted_lines[start_idx][1] + 8)))), (int((1024/14)*(last_line[2] + 6)), (1024 - int((1024/14)*(last_line[3] + 8)))), (255, 0, 0), 3)
                 start_idx = idx
