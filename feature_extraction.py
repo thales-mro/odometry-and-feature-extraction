@@ -61,8 +61,8 @@ def ransac_inverted_plane(points, canvas):
                     #print("n points", n_points)
                     if n_points > 1000:
                         #print("Vai pintar meeeesmo", n_points)
-                        cv2.line(canvas, (int((1024/14)*(p_0[0] + 6)), (1024 - int((1024/14)*(p_0[1] + 8)))), (int((1024/14)*(last_x + 6)), (1024 - int((1024/14)*(last_y + 8)))), (255, 0, 0), 3)
-                        cv2.imwrite("features.png", canvas)
+                        '''cv2.line(canvas, (int((1024/14)*(p_0[0] + 6)), (1024 - int((1024/14)*(p_0[1] + 8)))), (int((1024/14)*(last_x + 6)), (1024 - int((1024/14)*(last_y + 8)))), (255, 0, 0), 3)
+                        cv2.imwrite("features.png", canvas)'''
                         to_be_deleted += to_be_deleted_iter
                         lines.append([p_0[0], p_0[1], last_x, last_y])
                     n_points = 0
@@ -85,7 +85,7 @@ def ransac_regular_plane(points, canvas):
 
     lines = []
     good = 0
-    while good <= 100:
+    while good <= 200:
         print("Iter number #", good)
         valid_guess = False
         guess1 = 0
@@ -335,8 +335,8 @@ def main():
             diff_incl = abs(last_incl - incl)
             dist_y = abs(line[3] - last_line[1])
             dist_x = abs(line[0] - last_line[2])#math.sqrt((line[1] - last_line[3])**2 + (line[0] - last_line[2])**2)
-            #print("incl", incl, "dist", dist)
-            if diff_incl > 0.1 or (dist_y > 0.3 and dist_x > 0.2):
+            #print("dincl", diff_incl, "dist", dist_y)
+            if diff_incl > 0.1 or (dist_y > 0.1 or dist_x > 0.3):
                 #print("w0w", idx)
                 cv2.line(plot_arr, (int((1024/14)*(regular_lines[start_idx][0] + 6)), (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))), (int((1024/14)*(last_line[2] + 6)), (1024 - int((1024/14)*(last_line[3] + 8)))), (255, 0, 0), 3)
                 start_idx = idx
