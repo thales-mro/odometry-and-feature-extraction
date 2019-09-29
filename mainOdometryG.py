@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import time
 import vrep
 
-MODE = 3 	  	
+MODE = 2 	  	
 
 def main():
 
@@ -197,6 +197,7 @@ def Circuit03(robot):
 		robot.set_right_velocity(3.0)
 		all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory = forward(robot, 4.6, all_x, all_y, robot_trajectory, moviment_state, odometry_trajectory) # 4.6
 
+		
 		robot.set_left_velocity(2.0)
 		robot.set_right_velocity(0.0)
 		all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory = rotate(robot, degreesToRadians(90.0), 0, all_x, all_y, robot_trajectory,moviment_state, odometry_trajectory) # 82
@@ -460,7 +461,7 @@ def odometry(robot, x, y, orientation):
 		dangle = dangle_encoder*1.05
 
 	elif MODE == 2:
-		dangle = gyroZ*0.90
+		dangle = gyroZ*0.85
 		#print(orientation, dangle)
 
 	elif MODE == 3:
