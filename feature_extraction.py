@@ -3,7 +3,7 @@ import math
 import numpy as np
 import random
 
-RANSAC_EXEC_TIMES = 100
+RANSAC_EXEC_TIMES = 99
 MIN_HITS = 10000
 MIN_CONSEC_POINTS = 1000
 
@@ -30,6 +30,7 @@ def ransac_inverted_plane(points):
         guess1 = 0
         guess2 = 0
 
+        # calculates point guess
         while not valid_guess:
             guess1 = random.randint(0, points.shape[0] - 1)
             guess2 = random.randint(0, points.shape[0] - 1)
@@ -40,16 +41,20 @@ def ransac_inverted_plane(points):
         point1 = points[guess1]
         point2 = points[guess2]
 
+        # calculates line parameters from 2 points in the inverted yx plane
         m = (point2[0] - point1[0])/(point2[1] - point1[1])
         b = point2[0] + point2[1]*((point1[0] - point2[0])/(point2[1] - point1[1]))
 
         denom = np.sqrt((m**2) + 1)
 
+        # calculates distances from every point to line
         distance2 = []
         for _, element in enumerate(points):
             distance2.append(np.abs((m * element[1]) + element[0] + b)/denom)
+        # normalizes calculate distances 
         norm_dist2 = distance2/np.max(distance2)
 
+        # calculates the number of points that are close to the line according to threshold
         hit_rate = 0
         hit_idx = []
         for idx, elem in enumerate(norm_dist2):
@@ -57,6 +62,7 @@ def ransac_inverted_plane(points):
                 hit_rate += 1
                 hit_idx.append(idx)
 
+        # it the number of close points to the line are greater than a threshold, we possibly have a line
         if hit_rate > MIN_HITS:
             points = points[points[:, 0].argsort()]
             points = points[points[:, 1].argsort(kind='mergesort')]
@@ -67,6 +73,7 @@ def ransac_inverted_plane(points):
             n_points = 0
             to_be_deleted = []
             to_be_deleted_iter = []
+            # test if the points are consecutive (they can form multiple colinear lines)
             for idx in hit_idx:
                 dist_between_points = math.sqrt(
                     ((points[idx][0] - last_x)**2) + ((points[idx][1] - last_y)**2))
@@ -83,7 +90,7 @@ def ransac_inverted_plane(points):
                     to_be_deleted_iter.append(idx)
                 last_x = points[idx][0]
                 last_y = points[idx][1]
-
+            #deletes points within found lines
             points = np.delete(points, to_be_deleted, axis=0)
         loop_idx += 1
 
@@ -111,6 +118,7 @@ def ransac_regular_plane(points):
         guess1 = 0
         guess2 = 0
 
+        # calculates point guess
         while not valid_guess:
             guess1 = random.randint(0, points.shape[0] - 1)
             guess2 = random.randint(0, points.shape[0] - 1)
@@ -121,15 +129,19 @@ def ransac_regular_plane(points):
         point1 = points[guess1]
         point2 = points[guess2]
 
+        # calculates line parameters from 2 points in the xy plane
         m = (point2[1] - point1[1])/(point2[0] - point1[0])
         b = point2[1] + point2[0]*((point1[1] - point2[1])/(point2[0] - point1[0]))
         denom = np.sqrt((m**2) + 1)
 
+        # calculates distances from every point to line
         distance = []
         for _, element in enumerate(points):
             distance.append(np.abs((m * element[0]) + element[1] + b)/denom)
+        # normalizes calculate distances 
         norm_dist = distance/np.max(distance)
 
+        # calculates the number of points that are close to the line according to threshold
         hit_rate = 0
         hit_idx = []
         for idx, elem in enumerate(norm_dist):
@@ -137,6 +149,7 @@ def ransac_regular_plane(points):
                 hit_rate += 1
                 hit_idx.append(idx)
 
+        # it the number of close points to the line are greater than a threshold, we possibly have a line
         if hit_rate > MIN_HITS:
 
             points = points[points[:, 1].argsort()]
@@ -148,6 +161,7 @@ def ransac_regular_plane(points):
             n_points = 0
             to_be_deleted = []
             to_be_deleted_iter = []
+            # test if the points are consecutive (they can form multiple colinear lines)
             for idx in hit_idx:
                 dist_between_points = math.sqrt(
                     ((points[idx][0] - last_x)**2) + ((points[idx][1] - last_y)**2))
@@ -164,12 +178,14 @@ def ransac_regular_plane(points):
                     to_be_deleted_iter.append(idx)
                 last_x = points[idx][0]
                 last_y = points[idx][1]
+            #deletes points within found lines
             points = np.delete(points, to_be_deleted, axis=0)
         loop_idx += 1
 
     return np.asarray(lines, dtype=np.float32)
 
 def main():
+    # loads extracted points
     data = np.load('ExtractedPoints.npy')
     data = data*(-1)
 
@@ -179,6 +195,7 @@ def main():
     for i, _ in enumerate(points):
         points[i] = [data[0][i], data[1][i]]
 
+    #sorts points
     sorted_points = points[points[:, 0].argsort()]
     sorted_points = sorted_points[sorted_points[:, 1].argsort(kind='mergesort')]
 
@@ -191,6 +208,7 @@ def main():
         canvas[y][x][2] = 0
     '''
 
+    # calls ransac function for line calculation in the regular plane, orders obtained lines
     regular_lines = ransac_regular_plane(sorted_points)
     regular_lines = regular_lines[regular_lines[:, 0].argsort()]
     regular_lines = regular_lines[regular_lines[:, 1].argsort(kind='mergesort')]
@@ -198,6 +216,7 @@ def main():
     last_line = []
     start_idx = 0
     last_incl = 0
+    #it tries to merge lines that are colinear and close enough, before painting into canvas
     if regular_lines.any():
         last_line = regular_lines[0]
         last_incl = (last_line[3] - last_line[1])/(last_line[2] - last_line[0])
@@ -211,6 +230,7 @@ def main():
             dist_x = abs(line[0] - last_line[2])
 
             if diff_incl > 0.1 or (dist_y > 0.1 or dist_x > 0.3):
+                #if lines are not colinear or close enough, paint the first one in the canvas
                 cv2.line(canvas,
                          (int((1024/14)*(regular_lines[start_idx][0] + 6)),
                           (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))),
@@ -221,6 +241,7 @@ def main():
 
         last_line = line
         last_incl = incl
+        # paint last line into canvas
         cv2.line(canvas,
                  (int((1024/14)*(regular_lines[start_idx][0] + 6)),
                   (1024 - int((1024/14)*(regular_lines[start_idx][1] + 8)))),
@@ -228,10 +249,9 @@ def main():
                   (1024 - int((1024/14)*(last_line[3] + 8)))),
                  (255, 0, 0), 3)
 
-    cv2.imwrite("features.png", canvas)
-
     sorted_points = points[points[:, 0].argsort()]
     sorted_points = sorted_points[sorted_points[:, 1].argsort(kind='mergesort')]
+    # calls ransac function for line calculation in the inverted plane, orders obtained lines
     inverted_lines = ransac_inverted_plane(sorted_points)
     inverted_lines = inverted_lines[inverted_lines[:, 1].argsort()]
     inverted_lines = inverted_lines[inverted_lines[:, 0].argsort(kind='mergesort')]
@@ -239,6 +259,7 @@ def main():
     last_line = []
     start_idx = 0
     last_incl = 0
+    #it tries to merge lines that are colinear and close enough, before painting into canvas
     if inverted_lines.any():
         last_line = inverted_lines[0]
         last_incl = (last_line[2] - last_line[0])/(last_line[3] - last_line[1])
@@ -250,7 +271,7 @@ def main():
             diff_incl = abs(last_incl - incl)
             dist_y = abs(line[3] - last_line[1])
             dist_x = abs(line[0] - last_line[2])
-
+            #if lines are not colinear or close enough, paint the first one in the canvas
             if diff_incl > 0.1 or (dist_y > 0.2 and dist_x > 0.1):
                 cv2.line(canvas,
                          (int((1024/14)*(inverted_lines[start_idx][0] + 6)),
@@ -262,6 +283,7 @@ def main():
 
         last_line = line
         last_incl = incl
+        # paint last line into canvas
         cv2.line(canvas,
                  (int((1024/14)*(inverted_lines[start_idx][0] + 6)),
                   (1024 - int((1024/14)*(inverted_lines[start_idx][1] + 8)))),
